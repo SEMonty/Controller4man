@@ -15,23 +15,12 @@ namespace Controller4man
 		static void Main()
 		{
 
-			ssh test = new ssh("10.3.51.246", 22, "cdfw", "xxx");
-			test.Connect();
-			Console.WriteLine(test.send("pwd"));
-			Console.WriteLine(test.send("ls"));
-			test.Disconnect();
+			
 
-			/*
-			Application.EnableVisualStyles();
-			Application.SetCompatibleTextRenderingDefault(false);
-			Application.Run(new Form1());
-			*/
 			Xbox360_JoyPad pad = new Xbox360_JoyPad();
 			uint padIndex = 0;
 
 			padIndex = 1;
-			// テスト環境でXbox360コントローラが1のため決め打ち 
-			// 他の環境や別のジョイパッドを使用する場合は変更するか以下の入力フォームを使用 
 
 			
 			while (true)
