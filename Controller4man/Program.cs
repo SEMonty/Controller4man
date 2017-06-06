@@ -37,7 +37,7 @@ namespace Controller4man
 
 			string myadd = "127.0.0.1";
 			int listenport = 6001;
-			string piadd = "192.168.0.117";
+			string piadd = "192.168.10.26";
 			int piport = 6000;
 
 			//メインループのWait時間(ms)
