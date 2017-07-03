@@ -19,56 +19,100 @@ namespace Controller4man
 		/// </summary>
 		[STAThread]
 		static void Main()
-		{
-			//////////////////////////////////config
+        {            //////////////////////////////////config
 
-			double steer_range = 0.04;
-			double steer_center = 0.14;
-			double acc_range = 0.02;
-			double acc_center = 0.138;
+            double steer_range = 0.06;
+            double steer_center = 0.13;
+            double acc_range = 0.04;
+            double acc_center = 0.138;
 
 
-			//アイテムAスピード1.2倍
-			double itemA_effect = 1.2;
-			int itemA_time = 0;
-			//アイテムBスピード0.5倍
-			double itemB_effect = 0.5;
-			int itemB_time = 0;
+            //アイテムAスピード1.2倍
+            double itemA_effect = 1.2;
+            int itemA_time = 0;
+            //アイテムBスピード0.5倍
+            double itemB_effect = 0.5;
+            int itemB_time = 0;
 
-			string myadd = "127.0.0.1";
-			int listenport = 6001;
-			string piadd = "192.168.10.26";
-			int piport = 6000;
+            string myadd = "127.0.0.1";
+            int listenport = 6001;
 
-			//メインループのWait時間(ms)
-			int waitms = 100;
+            string piadd = "192.168.10.17";
+            int piport = 6001;
 
-			////////////////////////////////////////ジョイパッド選択
-			Xbox360_JoyPad pad = new Xbox360_JoyPad();
-			uint padIndex = 0;
+            //メインループのWait時間(ms)
+            int waitms = 100;
 
-			padIndex = 1;
+            Xbox360_JoyPad pad = new Xbox360_JoyPad();
+            uint padIndex = 0;
 
-			
-			while (true)
-			{
-				uint[] pads = pad.GetJoypads();
-				foreach (uint p in pads)
-				{ Console.WriteLine("connected joypad number:" + p); }
+            ////////////////////////////////////////ジョイパッド選択
 
-				Console.Write("please select joypad number:");
 
-				string line = Console.ReadLine();
-				if (line == "quit") { return; }
+            while (true)
+            {
+                uint[] pads = pad.GetJoypads();
+                foreach (uint p in pads)
+                { Console.WriteLine("connected joypad number:" + p); }
 
-				if (!uint.TryParse(line, out padIndex))
-				{ continue; }
+                Console.Write("please select joypad number:");
 
-				break;
-			}
+                string line = Console.ReadLine();
+                if (line == "quit") { return; }
 
-			///////////////////////////////////////////開始待ち
+                if (!uint.TryParse(line, out padIndex))
+                { continue; }
 
+                break;
+            }
+            /////////////////////////////////////////////////////////////////////////////////
+            ////ジョイパッド出力の確認///////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////////////////////////////////
+            /*
+            while (true)
+            {
+                System.Threading.Thread.Sleep(100);
+
+                JoyPad.JOYERR err = pad.GetPosEx(padIndex);
+                JoyPad.JOYINFOEX ex = pad.JoyInfoEx;
+
+                if (err != JoyPad.JOYERR.NOERROR)
+                {
+                    Console.WriteLine("エラー");
+                    continue;
+                }
+
+                Console.Write(" " + pad.LeftStickX.ToString("+0.000;-0.000; 0.000"));
+                Console.Write(" " + pad.LeftStickY.ToString("+0.000;-0.000; 0.000"));
+                Console.Write(" " + pad.RightStickX.ToString("+0.000;-0.000; 0.000"));
+                Console.Write(" " + pad.RightStickY.ToString("+0.000;-0.000; 0.000"));
+                Console.Write(" " + pad.Trigger.ToString("+0.000;-0.000; 0.000"));
+
+                Console.Write(" ");
+                Console.Write(pad.ButtonA ? "*" : "-");
+                Console.Write(pad.ButtonB ? "*" : "-");
+                Console.Write(pad.ButtonX ? "*" : "-");
+                Console.Write(pad.ButtonY ? "*" : "-");
+                Console.Write(pad.ButtonLeftShoulder ? "*" : "-");
+                Console.Write(pad.ButtonRightShoulder ? "*" : "-");
+                Console.Write(pad.ButtonBack ? "*" : "-");
+                Console.Write(pad.ButtonStart ? "*" : "-");
+                Console.Write(pad.ButtonLeftStick ? "*" : "-");
+                Console.Write(pad.ButtonRightStick ? "*" : "-");
+
+                Console.WriteLine();
+            }
+            */
+            /////////////////////////////////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+            ///////////////////////////////////////////開始待ち
+            /*
 			UdpReceiverSync rec = new UdpReceiverSync();
 
 			Console.WriteLine("Waiting for 'start' message");
@@ -81,11 +125,11 @@ namespace Controller4man
 
 			}
 			rec.disconnect();
+            */
+            ///////////////////////////////////////////ゲーム中
 
-			///////////////////////////////////////////ゲーム中
-
-			//非同期受信
-			UdpClient rec2 = new UdpClient(listenport);
+            //非同期受信
+            UdpClient rec2 = new UdpClient(listenport);
 			rec2.BeginReceive(new AsyncCallback(OnUdpData), rec2);
 
 			//同期送信。（非同期でもいいけどめんどい）
@@ -121,19 +165,27 @@ namespace Controller4man
 					itemB_time -= waitms;
 				}
 
+                //指令値の計算
 				double steer_cmd = (((pad.LeftStickX) + 1) / 2 )* steer_range + steer_center - steer_range/2;
-				double acc_cmd = (((pad.RightStickY) + 1) / 2) * acc_range_efected + acc_center - acc_range_efected / 2;
+				double acc_cmd = (((pad.Trigger) + 1) / 2) * acc_range_efected + acc_center - acc_range_efected / 2;
 
-				Console.Write(" " + steer_cmd.ToString("+0.000;-0.000; 0.000"));
-				Console.Write(" " + acc_cmd.ToString("+0.000;-0.000; 0.000"));
-
+                //送信
 				udp.send("s" + steer_cmd);
 				udp.send("a" + acc_cmd);
+                //表示
+                Console.Write(" " + steer_cmd.ToString("+0.000;-0.000; 0.000"));
+                Console.Write(" " + acc_cmd.ToString("+0.000;-0.000; 0.000"));
+                Console.WriteLine();
 
-				Console.WriteLine();
+                ///ボタンAでラジコンのPWM生成器の再起動
+                if (pad.ButtonA)
+                {
+                    udp.send("q");
+                    Console.Write("pwm generator restart");
+                }
 
-				//受信したメッセージで分岐する
-				foreach(string mes in message)
+                //受信したメッセージで分岐する
+                foreach (string mes in message)
 				{
 					if (mes.Equals("hw"))//human win　最優先
 					{
